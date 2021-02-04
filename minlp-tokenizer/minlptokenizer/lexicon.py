@@ -51,7 +51,7 @@ class Lexicon():
             for word in filter(lambda t: t and not t.startswith('#'), file_or_list):
                 self.ac.add_word(word)
 
-    def product_factor(self, texts):
+    def get_factor(self, texts):
         '''
         根据用户词典生成句子对应的干预权重矩阵
         :param texts: 目标句子
@@ -62,16 +62,16 @@ class Lexicon():
         max_len = max(map(len, texts))
         matrix = []
         for text in texts:
-            factor_matrix = np.ones(shape=[max_len, Tag.__len__()])
+            factor_matrix = np.zeros(shape=[max_len, Tag.__len__()])  # 干预矩阵中0表示非干预，非零位表示对应位置干预系数
             for (end_pos, length) in self.ac.iter(text):
                 start_pos = end_pos - length + 1
                 if length == 1:
-                    factor_matrix[start_pos][1] *= self.interfere_factor
+                    factor_matrix[start_pos][1] = self.interfere_factor
                 else:
-                    factor_matrix[start_pos][2] *= self.interfere_factor
-                    factor_matrix[end_pos][4] *= self.interfere_factor
+                    factor_matrix[start_pos][2] = self.interfere_factor
+                    factor_matrix[end_pos][4] = self.interfere_factor
                     for i in range(start_pos + 1, end_pos):
-                        factor_matrix[i][3] *= self.interfere_factor
+                        factor_matrix[i][3] = self.interfere_factor
             matrix.append(factor_matrix)
         return matrix
 
